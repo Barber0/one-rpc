@@ -1,7 +1,9 @@
 package transport
 
 import (
+	"io"
 	"net"
+	"reflect"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -119,7 +121,51 @@ func (c *cltConn) recv() {
 		cfg		=	c.clt.conf
 		buf		=	make([]byte,4*1024)
 		curBuf	[]byte
+		n		int
+		err		error
 	)
+	for !c.isClosed {
+		if cfg.ReadTimeout != 0 {
+			c.conn.SetReadDeadline(time.Now().Add(cfg.ReadTimeout))
+		}
+		n,err = c.conn.Read(buf)
+		if err != nil {
+			if isNoDataErr(err) {
+				continue
+			}
+			if e, ok := err.(*net.OpError); ok {
+				c.clt.logger.Errorf("net opErr: %v",e)
+			}
+			if err == io.EOF {
+				c.clt.logger.Errorf("conn closed by remote: %v",c.conn.RemoteAddr())
+			}else {
+				c.clt.logger.Errorf("read pkg err: %v %v",reflect.TypeOf(err),err)
+			}
+			c.close()
+			return
+		}
+		curBuf = append(curBuf,buf[:n]...)
+		for {
+			pkgLen,status := c.clt.proto.ParsePkg(curBuf)
+			if status == PKG_LESS {
+				break
+			}
+			if status == PKG_FULL {
+				pkg := make([]byte, pkgLen)
+				copy(pkg,curBuf[:pkgLen])
+				curBuf = curBuf[pkgLen:]
+				go c.clt.proto.Recv(pkg)
+				if len(curBuf) > 0 {
+					continue
+				}
+				curBuf = nil
+				break
+			}
+			c.clt.logger.Errorf("parse pkg failed: %v",err)
+			c.close()
+			return
+		}
+	}
 }
 
 func (c *cltConn) close() {

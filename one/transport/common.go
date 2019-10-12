@@ -19,7 +19,7 @@ type SvrProtocol interface {
 }
 
 type CltProtocol interface {
-	Recv(ctx context.Context,pkg []byte)
+	Recv(pkg []byte)
 	ParsePkg(pkg []byte) (int,int)
 }
 
@@ -72,8 +72,11 @@ func ParsePkg(req []byte) (pkgLen, status int) {
 }
 
 func isNoDataErr(err error) bool {
-	e := err.(net.Error)
-	return e.Temporary() || e.Timeout()
+	if e, ok := err.(net.Error); ok {
+		return e.Temporary() || e.Timeout()
+	}else {
+		return ok
+	}
 }
 
 func checkPanic() {

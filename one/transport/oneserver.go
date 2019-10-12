@@ -10,13 +10,14 @@ type OneSvrConf struct {
 	Address			string
 	TransProtocol	string
 
-	maxInvoke		int
-	queueCap		int
+	MaxInvoke		int
+	QueueCap		int
 
 	AcceptTimeout	time.Duration
 	ReadTimeout		time.Duration
 	WriteTimeout	time.Duration
 	HandleTimeout	time.Duration
+	IdleTimeout		time.Duration
 
 	TCPReadBuf		int
 	TCPWriteBuf		int
