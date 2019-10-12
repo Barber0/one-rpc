@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net"
+	"one/util/gpool"
 	"reflect"
 	"time"
 )
@@ -21,7 +22,7 @@ func newTcpHandler(svr *OneSvr) *tcpHandler {
 	}
 	cfg := h.svr.conf
 	if cfg.MaxInvoke != 0 && cfg.QueueCap != 0 {
-		h.gpool = NewGPool(cfg.MaxInvoke,cfg.QueueCap)
+		h.gpool = gpool.NewGPool(cfg.MaxInvoke,cfg.QueueCap)
 	}
 	h.refreshIdleTime()
 	return h

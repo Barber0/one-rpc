@@ -1,30 +1,22 @@
 package main
 
 import (
-	"bytes"
 	"context"
-	"encoding/binary"
+	"one"
+	"one/protocol/res/requestf"
 	"one/transport"
 	"one/util/logger"
 	"time"
 )
 
-type AlphaProtocol struct {}
+type Dispatcher struct{}
 
-func (ap *AlphaProtocol) Invoke(ctx context.Context, req []byte) (rsp []byte) {
-	buf := bytes.NewBuffer(make([]byte,4))
-	buf.Write([]byte("server ddd"))
-	rsp = buf.Bytes()
-	binary.BigEndian.PutUint32(rsp,uint32(buf.Len()))
-	return
-}
-
-func (ap *AlphaProtocol) InvokeTimeout(ctx context.Context, req []byte) (rsp []byte) {
-	return
-}
-
-func (ap *AlphaProtocol) ParsePkg(pkg []byte) (int, int) {
-	return transport.ParsePkg(pkg)
+func (d *Dispatcher) Dispatch(ctx context.Context, req *requestf.ReqPacket, rsp *requestf.RspPacket) error {
+	*rsp = requestf.RspPacket{
+		Version:	req.Version,
+		Content:	[]byte(string(req.Content)+" answer"),
+	}
+	return nil
 }
 
 func main() {
@@ -36,11 +28,12 @@ func main() {
 		ReadTimeout:	3 * time.Second,
 		WriteTimeout:	3 * time.Second,
 		HandleTimeout:	3 * time.Second,
+		IdleTimeout:	3 * time.Minute,
 		TCPReadBuf:		4 * 1024 * 1024,
 		TCPWriteBuf:	4 * 1024 * 1024,
 		TCPNoDelay:		false,
 	}
-	svr := transport.NewOneSvr(&AlphaProtocol{},svrLogger,svrConf)
+	svr := transport.NewOneSvr(one.NewOneProtocol(&Dispatcher{}),svrLogger,svrConf)
 	if err := svr.Serve(); err != nil {
 		panic(err)
 	}

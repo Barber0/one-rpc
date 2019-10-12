@@ -1,18 +1,29 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
 	"fmt"
+	"github.com/golang/protobuf/proto"
+	"one/protocol/res/requestf"
 	"one/transport"
 	"one/util/logger"
+	"runtime/debug"
 	"time"
 )
 
 type BetaProtocol struct {}
 
 func (bp *BetaProtocol) Recv(pkg []byte) {
-	fmt.Println(string(pkg[4:]))
+	defer func() {
+		if pa := recover(); pa != nil {
+			debug.PrintStack()
+			fmt.Println(pa)
+		}
+	}()
+	rsp := new(requestf.RspPacket)
+	if err := proto.Unmarshal(pkg, rsp); err != nil {
+		panic(err)
+	}
+	fmt.Println(rsp,string(rsp.Content))
 }
 
 func (bp *BetaProtocol) ParsePkg(pkg []byte) (int, int) {
@@ -31,10 +42,10 @@ func main() {
 	}
 	svr := transport.NewOneClt(&BetaProtocol{},cltLogger,cltConf)
 
-	buf := bytes.NewBuffer(make([]byte,4))
-	buf.Write([]byte("client fff"))
-	req := buf.Bytes()
-	binary.BigEndian.PutUint32(req,uint32(buf.Len()))
+	req := requestf.Req2Bytes(&requestf.ReqPacket{
+		Version:	1,
+		Content:	[]byte("test"),
+	})
 
 	svr.Send(req)
 	time.Sleep(10 * time.Second)

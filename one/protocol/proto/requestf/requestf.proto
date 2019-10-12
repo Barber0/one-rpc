@@ -4,19 +4,17 @@ package requestf;
 
 message ReqPacket {
     int32 version       =   1;
-    int32 packettype    =   2;
-    int32 reqId         =   3;
-    string funcName     =   4;
-    string servant      =   5;
-    bytes content       =   6;
-    int32 timeout       =   7;
+    int32 reqId         =   2;
+    string funcName     =   3;
+    string servant      =   4;
+    bytes content       =   5;
+    int32 timeout       =   6;
 }
 
 message RspPacket {
     int32 version       =   1;
-    int32 packettype    =   2;
-    int32 reqId         =   3;
-    string iRet         =   4;
-    bytes content       =   5;
-    int32 resDesc       =   6;
+    int32 reqId         =   2;
+    bytes content       =   3;
+    bool isErr          =   4;
+    string resDesc      =   5;
 }

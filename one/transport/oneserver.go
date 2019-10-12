@@ -75,7 +75,6 @@ func (s *OneSvr) GetConf() *OneSvrConf {
 	return &s.conf
 }
 
-// TODO: 接收发来的信息
 func (s *OneSvr) invoke(ctx context.Context, pkg []byte) (rsp []byte) {
 	cfg := s.conf
 	atomic.AddInt32(&s.numInvoke,1)

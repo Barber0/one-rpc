@@ -35,14 +35,10 @@ type Logger interface {
 	Errorf(tpl string, args...interface{})
 }
 
-type task func()
 type GPool interface {
-	AddTask(t task)
+	Start()
+	AddTask(t func())
 	Release()
-}
-
-func NewGPool(maxInvoke, queueCap int) GPool {
-	return nil
 }
 
 const (

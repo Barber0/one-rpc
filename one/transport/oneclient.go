@@ -154,7 +154,7 @@ func (c *cltConn) recv() {
 				pkg := make([]byte, pkgLen)
 				copy(pkg,curBuf[:pkgLen])
 				curBuf = curBuf[pkgLen:]
-				go c.clt.proto.Recv(pkg)
+				go c.clt.proto.Recv(pkg[4:])
 				if len(curBuf) > 0 {
 					continue
 				}
