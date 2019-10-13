@@ -32,7 +32,7 @@ type OneHandler interface {
 type OneSvr struct {
 	isClosed	bool
 	handler		OneHandler
-	conf		OneSvrConf
+	conf		*OneSvrConf
 	proto		SvrProtocol
 	logger		Logger
 
@@ -40,7 +40,7 @@ type OneSvr struct {
 	lastInvoke	time.Time
 }
 
-func NewOneSvr(sp SvrProtocol, logger Logger, conf OneSvrConf) *OneSvr {
+func NewOneSvr(sp SvrProtocol, logger Logger, conf *OneSvrConf) *OneSvr {
 	s := &OneSvr{
 		conf:	conf,
 		logger:	logger,
@@ -72,7 +72,7 @@ func (s *OneSvr) Shutdown() {
 }
 
 func (s *OneSvr) GetConf() *OneSvrConf {
-	return &s.conf
+	return s.conf
 }
 
 func (s *OneSvr) invoke(ctx context.Context, pkg []byte) (rsp []byte) {
