@@ -7,13 +7,14 @@ import (
 )
 
 type OneSvrConf struct {
-	Address			string
-	TransProtocol	string
+	Address			string			`yaml:"address"`
+	Protocol		string			`yaml:"protocol"`
 
-	MaxInvoke		int
-	QueueCap		int
+	MaxInvoke		int				`yaml:"max_invoke"`
+	QueueCap		int				`yaml:"queue_cap"`
 
-	AcceptTimeout	time.Duration
+
+	AcceptTimeout	time.Duration	`yaml:"accept_timeout"`
 	ReadTimeout		time.Duration
 	WriteTimeout	time.Duration
 	HandleTimeout	time.Duration
@@ -50,7 +51,7 @@ func NewOneSvr(sp SvrProtocol, logger Logger, conf *OneSvrConf) *OneSvr {
 }
 
 func (s *OneSvr) getHandler() (h OneHandler) {
-	switch s.conf.TransProtocol {
+	switch s.conf.Protocol {
 	case "tcp":
 		h = newTcpHandler(s)
 	default:

@@ -8,16 +8,18 @@ import (
 )
 
 type dispatcher interface {
-	Dispatch(ctx context.Context, req *requestf.ReqPacket, rsp *requestf.RspPacket) error
+	Dispatch(ctx context.Context, imp interface{}, req *requestf.ReqPacket, rsp *requestf.RspPacket) error
 }
 
 type OneProtocol struct {
-	dpr		dispatcher
+	serviceImp	interface{}
+	dpr			dispatcher
 }
 
-func NewOneProtocol(dpr dispatcher) *OneProtocol {
+func NewOneProtocol(dpr dispatcher, imp interface{}) *OneProtocol {
 	return &OneProtocol{
-		dpr:	dpr,
+		dpr:		dpr,
+		serviceImp:	imp,
 	}
 }
 
@@ -25,9 +27,9 @@ func (p *OneProtocol) Invoke(ctx context.Context, req []byte) []byte {
 	reqPacket := new(requestf.ReqPacket)
 	rspPacket := new(requestf.RspPacket)
 	proto.Unmarshal(req, reqPacket)
-	if err := p.dpr.Dispatch(ctx, reqPacket, rspPacket); err != nil {
+	if err := p.dpr.Dispatch(ctx, p.serviceImp, reqPacket, rspPacket); err != nil {
 		globalLogger.Errorf("dispatch request failed: %v",err)
-		rspPacket.Version = reqPacket.Version
+		rspPacket.Version = ONE_RPC_VERSION
 		rspPacket.ReqId = reqPacket.ReqId
 		rspPacket.IsErr	= true
 		rspPacket.ResDesc = err.Error()
@@ -43,7 +45,7 @@ func (p *OneProtocol) InvokeTimeout(ctx context.Context, req []byte) []byte {
 	reqPacket := new(requestf.ReqPacket)
 	proto.Unmarshal(req, reqPacket)
 	rspPacket := &requestf.RspPacket{
-		Version:	reqPacket.Version,
+		Version:	ONE_RPC_VERSION,
 		ReqId:		reqPacket.ReqId,
 		IsErr:		true,
 		ResDesc:	"invoke timeout",

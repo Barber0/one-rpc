@@ -26,22 +26,19 @@ func (imp *ServiceImp) Alpha(ctx context.Context, req *endpointf.EndpointF) (rsp
 // end 框架实现
 
 // protoc生成
-type AppService struct{
-	imp		_service
-}
+type AppService struct{}
 
 type _service interface {
 	Alpha(ctx context.Context,req *endpointf.EndpointF) (*endpointf.EndpointF,error)
 }
 
 func (s *AppService) RegisterServiceImp(obj string, imp _service) {
-	s.imp = imp
-	one.AddProxy(obj,s)
+	one.AddProxy(obj, s, imp)
 }
 
 // Dispatch方法运行在服务端
 // Dispatcher接口由protobuf生成的Service结构体实现
-func (d *AppService) Dispatch(ctx context.Context, req *requestf.ReqPacket, rsp *requestf.RspPacket) (err error) {
+func (d *AppService) Dispatch(ctx context.Context, imp interface{}, req *requestf.ReqPacket, rsp *requestf.RspPacket) (err error) {
 	switch req.FuncName {
 	case "Alpha":
 		payload := new(endpointf.EndpointF)
@@ -49,12 +46,12 @@ func (d *AppService) Dispatch(ctx context.Context, req *requestf.ReqPacket, rsp 
 			return
 		}
 		var out *endpointf.EndpointF
-		out,err = d.imp.Alpha(ctx,payload)
+		out,err = imp.(_service).Alpha(ctx,payload)
 		if err != nil {
 			return
 		}
 		*rsp = requestf.RspPacket{
-			//Version:	req.Version,
+			Version:	one.ONE_RPC_VERSION,
 			ReqId:		req.ReqId,
 		}
 		rsp.Content,_ = proto.Marshal(out)
@@ -67,7 +64,7 @@ func (d *AppService) Dispatch(ctx context.Context, req *requestf.ReqPacket, rsp 
 // end protoc 生成
 
 func TestNewOneProtocol(t *testing.T) {
-	p := one.NewOneProtocol(&AppService{})
+	p := one.NewOneProtocol(&AppService{},&ServiceImp{})
 	fmt.Println(p)
 }
 
