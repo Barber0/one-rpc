@@ -19,6 +19,7 @@ type SvrProtocol interface {
 }
 
 type CltProtocol interface {
+	Send(reqId int32, servant, funcName string, pkg []byte) ([]byte, error)
 	Recv(pkg []byte)
 	ParsePkg(pkg []byte) (int,int)
 }

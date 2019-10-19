@@ -10,7 +10,9 @@ import (
 	"time"
 )
 
-type BetaProtocol struct {}
+type BetaProtocol struct {
+	clt		*transport.OneClt
+}
 
 func (bp *BetaProtocol) Recv(pkg []byte) {
 	defer func() {
@@ -24,6 +26,10 @@ func (bp *BetaProtocol) Recv(pkg []byte) {
 		panic(err)
 	}
 	fmt.Println(rsp,string(rsp.Content))
+}
+
+func (bp *BetaProtocol) Send(pkg []byte) (rspPkg []byte, err error) {
+	return
 }
 
 func (bp *BetaProtocol) ParsePkg(pkg []byte) (int, int) {
@@ -40,13 +46,13 @@ func main() {
 		WriteTimeout:	3 * time.Second,
 		IdleTimeout:	3 * time.Minute,
 	}
-	svr := transport.NewOneClt(&BetaProtocol{},cltLogger,cltConf)
+	clt := transport.NewOneClt(&BetaProtocol{},cltLogger,cltConf)
 
 	req := requestf.Req2Bytes(&requestf.ReqPacket{
 		Version:	1,
 		Content:	[]byte("test"),
 	})
 
-	svr.Send(req)
+	clt.Send(req)
 	time.Sleep(10 * time.Second)
 }

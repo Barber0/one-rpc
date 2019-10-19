@@ -11,14 +11,15 @@ import (
 
 type OneCltConf struct {
 	Address			string
-	TransProtocol	string
+	Balance			string			`yaml:"balance"`
+	TransProtocol	string			`yaml:"trans_protocol"`
 
-	QueueCap		int
+	QueueCap		int				`yaml:"queue_cap"`
 
-	DialTimeout		time.Duration
-	ReadTimeout		time.Duration
-	WriteTimeout	time.Duration
-	IdleTimeout		time.Duration
+	DialTimeout		time.Duration	`yaml:"dial_timeout"`
+	ReadTimeout		time.Duration	`yaml:"read_timeout"`
+	WriteTimeout	time.Duration	`yaml:"write_timeout"`
+	IdleTimeout		time.Duration	`yaml:"idle_timeout"`
 }
 
 type cltConn struct {
@@ -31,17 +32,17 @@ type cltConn struct {
 }
 
 type OneClt struct {
-	conf		OneCltConf
-	proto		CltProtocol
+	conf		*OneCltConf
+	Proto		CltProtocol
 	conn		*cltConn
 	logger		Logger
 	sendQ		chan []byte
 }
 
-func NewOneClt(cp CltProtocol, logger Logger, conf OneCltConf) *OneClt {
+func NewOneClt(cp CltProtocol, logger Logger, conf *OneCltConf) *OneClt {
 	clt := &OneClt{
 		conf:	conf,
-		proto:	cp,
+		Proto:	cp,
 		logger:	logger,
 		sendQ:	make(chan []byte,conf.QueueCap),
 	}
@@ -52,6 +53,10 @@ func NewOneClt(cp CltProtocol, logger Logger, conf OneCltConf) *OneClt {
 		idleTime:	time.Now(),
 	}
 	return clt
+}
+
+func (c *OneClt) GetConf() *OneCltConf {
+	return c.conf
 }
 
 func (c *OneClt) Send(pkg []byte) (err error) {
@@ -146,7 +151,7 @@ func (c *cltConn) recv() {
 		}
 		curBuf = append(curBuf,buf[:n]...)
 		for {
-			pkgLen,status := c.clt.proto.ParsePkg(curBuf)
+			pkgLen,status := c.clt.Proto.ParsePkg(curBuf)
 			if status == PKG_LESS {
 				break
 			}
@@ -154,7 +159,7 @@ func (c *cltConn) recv() {
 				pkg := make([]byte, pkgLen)
 				copy(pkg,curBuf[:pkgLen])
 				curBuf = curBuf[pkgLen:]
-				go c.clt.proto.Recv(pkg[4:])
+				go c.clt.Proto.Recv(pkg[4:])
 				if len(curBuf) > 0 {
 					continue
 				}

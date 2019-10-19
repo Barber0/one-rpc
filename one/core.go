@@ -16,13 +16,16 @@ var (
 	svrWg			sync.WaitGroup
 
 	ConfPath		string
-	globalConf		struct {
-		Server		map[string]*transport.OneSvrConf	`yaml:"server"`
-	}
+	globalConf		OneGlobalConf
 )
 
+type OneGlobalConf struct {
+	Server		map[string]*transport.OneSvrConf	`yaml:"server"`
+	Client		transport.OneCltConf				`yaml:"client"`
+}
+
 func init() {
-	flag.StringVar(&ConfPath,"config","","config path")
+	flag.StringVar(&ConfPath,"config","config.yaml","config path")
 	Init()
 }
 
@@ -33,7 +36,7 @@ func Init() {
 		if svr.AcceptTimeout != 0 {
 			globalConf.Server[name].AcceptTimeout = svr.AcceptTimeout * time.Millisecond
 		}else {
-			globalConf.Server[name].AcceptTimeout = AcceptTimeout
+			globalConf.Server[name].AcceptTimeout = SvrAcceptTimeout
 		}
 		globalConf.Server[name].ReadTimeout = svr.ReadTimeout * time.Millisecond
 		globalConf.Server[name].WriteTimeout = svr.WriteTimeout * time.Millisecond
@@ -50,6 +53,33 @@ func Init() {
 			globalConf.Server[name].TCPWriteBuf = TCPWriteBuf
 		}
 	}
+	if globalConf.Client.Balance == "" {
+		globalConf.Client.Balance = NORMAL_BALANCE
+	}
+	if globalConf.Client.DialTimeout != 0 {
+		globalConf.Client.DialTimeout *= time.Millisecond
+	}else {
+		globalConf.Client.DialTimeout = CltDialTimeout
+	}
+	if globalConf.Client.ReadTimeout != 0 {
+		globalConf.Client.ReadTimeout *= time.Millisecond
+	}else {
+		globalConf.Client.ReadTimeout = CltReadTimeout
+	}
+	if globalConf.Client.WriteTimeout != 0 {
+		globalConf.Client.WriteTimeout *= time.Millisecond
+	}else {
+		globalConf.Client.WriteTimeout = CltWriteTimeout
+	}
+	if globalConf.Client.IdleTimeout != 0 {
+		globalConf.Client.IdleTimeout *= time.Millisecond
+	}else {
+		globalConf.Client.IdleTimeout = CltIdleTimeout
+	}
+}
+
+func GetConf() *OneGlobalConf {
+	return &globalConf
 }
 
 func Run() {
