@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"one/example/res/test"
+	"github.com/Barber0/one/example/res/test"
 )
 
 func main() {

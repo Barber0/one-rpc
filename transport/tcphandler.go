@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 	"net"
-	"one/util/gpool"
+	"github.com/Barber0/one/util/gpool"
 	"reflect"
 	"time"
 )

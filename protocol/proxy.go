@@ -1,8 +1,8 @@
 package protocol
 
 import (
-	"one/transport"
-	"one/util/logger"
+	"github.com/Barber0/one/transport"
+	"github.com/Barber0/one/util/logger"
 )
 
 func AddProxy(name string, dpr dispatcher, imp interface{}, regFunc func(name string, sp transport.SvrProtocol) error) error {

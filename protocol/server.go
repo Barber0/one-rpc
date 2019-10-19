@@ -3,8 +3,8 @@ package protocol
 import (
 	"context"
 	"github.com/golang/protobuf/proto"
-	"one/protocol/res/requestf"
-	"one/transport"
+	"github.com/Barber0/one/protocol/res/requestf"
+	"github.com/Barber0/one/transport"
 )
 
 type dispatcher interface {

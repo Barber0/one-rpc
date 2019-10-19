@@ -2,8 +2,8 @@ package one
 
 import (
 	"context"
-	"one/balance"
-	"one/transport"
+	"github.com/Barber0/one/balance"
+	"github.com/Barber0/one/transport"
 	"sync/atomic"
 )
 

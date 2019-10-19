@@ -5,8 +5,8 @@ import (
 	"flag"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"one/transport"
-	"one/util/logger"
+	"github.com/Barber0/one/transport"
+	"github.com/Barber0/one/util/logger"
 	"sync"
 	"time"
 )

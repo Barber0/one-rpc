@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/protobuf/proto"
-	"one/protocol/res/requestf"
-	"one/transport"
-	"one/util/logger"
+	"github.com/Barber0/one/protocol/res/requestf"
+	"github.com/Barber0/one/transport"
+	"github.com/Barber0/one/util/logger"
 	"sync"
 )
 
