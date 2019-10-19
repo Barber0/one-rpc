@@ -6,7 +6,7 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-func Req2Bytes(req *ReqPacket) (res []byte) {
+func (req *ReqPacket) Bytes() (res []byte) {
 	pkg,_ := proto.Marshal(req)
 	buf := bytes.NewBuffer(make([]byte,4))
 	buf.Write(pkg)
@@ -15,7 +15,7 @@ func Req2Bytes(req *ReqPacket) (res []byte) {
 	return
 }
 
-func Rsp2Bytes(rsp *RspPacket) (res []byte) {
+func (rsp *RspPacket) Bytes() (res []byte) {
 	pkg,_ := proto.Marshal(rsp)
 	buf := bytes.NewBuffer(make([]byte,4))
 	buf.Write(pkg)

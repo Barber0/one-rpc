@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-package endpointf;
-
-message EndpointF {
-    int32 code      =   1;
-}

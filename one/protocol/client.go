@@ -1,4 +1,4 @@
-package one
+package protocol
 
 import (
 	"errors"
@@ -6,25 +6,33 @@ import (
 	"github.com/golang/protobuf/proto"
 	"one/protocol/res/requestf"
 	"one/transport"
+	"one/util/logger"
 	"sync"
 )
 
-type OneClientProtocol struct {
+type ClientProtocol struct {
 	rsp		sync.Map
 	clt		*transport.OneClt
+	logger	Logger
 }
 
-func (ocp *OneClientProtocol) Recv(pkg []byte) {
+func NewClientProtocol(name string, conf *transport.OneCltConf) transport.CltProtocol {
+	cp := &ClientProtocol{}
+	cp.clt = transport.NewOneClt(cp,logger.GetOneLogger(name),conf)
+	return cp
+}
+
+func (ocp *ClientProtocol) Recv(pkg []byte) {
 	rsp := new(requestf.RspPacket)
 	proto.Unmarshal(pkg,rsp)
 	if readC, ok := ocp.rsp.Load(rsp.ReqId); ok {
 		readC.(chan *requestf.RspPacket) <- rsp
 	}else {
-		globalLogger.Error("no such message")
+		ocp.logger.Error("no such message")
 	}
 }
 
-func (ocp *OneClientProtocol) Send(reqId int32, servant, funcName string, pkg []byte) (rspPkg []byte, err error) {
+func (ocp *ClientProtocol) Send(reqId int32, servant, funcName string, pkg []byte) (rspPkg []byte, err error) {
 	req := &requestf.ReqPacket{
 		Version:	ONE_RPC_VERSION,
 		ReqId:		reqId,
@@ -32,7 +40,7 @@ func (ocp *OneClientProtocol) Send(reqId int32, servant, funcName string, pkg []
 		FuncName:	funcName,
 		Content:	pkg,
 	}
-	reqPkg := requestf.Req2Bytes(req)
+	reqPkg := req.Bytes()
 	readC := make(chan *requestf.RspPacket)
 	defer func() {
 		ocp.rsp.Delete(reqId)
@@ -51,15 +59,15 @@ func (ocp *OneClientProtocol) Send(reqId int32, servant, funcName string, pkg []
 	return
 }
 
-func (ocp *OneClientProtocol) ParsePkg(pkg []byte) (int, int) {
+func (ocp *ClientProtocol) ParsePkg(pkg []byte) (int, int) {
 	return transport.ParsePkg(pkg)
 }
 
-func (ocp *OneClientProtocol) getReqId() int32 {
+func (ocp *ClientProtocol) getReqId() int32 {
 	return 0
 }
 
-func (ocp *OneClientProtocol) String() string {
+func (ocp *ClientProtocol) String() string {
 	cltCfg := ocp.clt.GetConf()
 	return fmt.Sprintf("%s(%s)",cltCfg.TransProtocol,cltCfg.Address)
 }

@@ -48,10 +48,10 @@ func main() {
 	}
 	clt := transport.NewOneClt(&BetaProtocol{},cltLogger,cltConf)
 
-	req := requestf.Req2Bytes(&requestf.ReqPacket{
+	req := (&requestf.ReqPacket{
 		Version:	1,
 		Content:	[]byte("test"),
-	})
+	}).ToBytes()
 
 	clt.Send(req)
 	time.Sleep(10 * time.Second)

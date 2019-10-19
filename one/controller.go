@@ -9,27 +9,32 @@ import (
 
 const MAX_INT int32 = 1<<31 - 1
 
+type ClientInitializer func(name string, conf *transport.OneCltConf) transport.CltProtocol
+
 type ServiceController struct {
 	reqId		int32
-	alias		string
+	name		string
 	balancer	balance.Balancer
+	clientInitializer	ClientInitializer
 }
 
-func NewServiceController(alias string, addrs ...string) *ServiceController {
+func NewServiceController(name string, initializer ClientInitializer, addrs ...string) *ServiceController {
 	sc := &ServiceController{
-		alias:		alias,
+		name:		name,
+		clientInitializer:	initializer,
 	}
-	switch globalConf.Client.Balance {
+	ctx := GetContext()
+	conf := ctx.conf
+	switch conf.Client.Balance {
 	case NORMAL_BALANCE:
 		sc.balancer = balance.NewNormalBalancer()
 	}
 
 	protos := make([]balance.Node,len(addrs))
 	for i,addr := range addrs {
-		cfg := globalConf.Client
+		cfg := conf.Client
 		cfg.Address = addr
-		proto := &OneClientProtocol{}
-		proto.clt = transport.NewOneClt(proto,globalLogger,&cfg)
+		proto := sc.clientInitializer(name, &cfg)
 		protos[i] = proto
 	}
 	sc.balancer.Add(protos...)
