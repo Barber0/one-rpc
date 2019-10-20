@@ -2,29 +2,29 @@ package one
 
 import (
 	"context"
-	"github.com/Barber0/one/balance"
-	"github.com/Barber0/one/transport"
+	"github.com/Barber0/one-rpc/balance"
+	"github.com/Barber0/one-rpc/transport"
 	"sync/atomic"
 )
 
 const MAX_INT int32 = 1<<31 - 1
 
-type ClientInitializer func(name string, conf *transport.OneCltConf) transport.CltProtocol
+type ClientConstructor func(name string, conf *transport.OneCltConf) transport.CltProtocol
 
 type ServiceController struct {
 	reqId		int32
 	name		string
 	balancer	balance.Balancer
-	clientInitializer	ClientInitializer
+	construct	ClientConstructor
 }
 
-func NewServiceController(name string, initializer ClientInitializer, addrs ...string) *ServiceController {
+func NewServiceController(name string, constructor ClientConstructor, addrs ...string) *ServiceController {
 	sc := &ServiceController{
-		name:		name,
-		clientInitializer:	initializer,
+		name:			name,
+		construct:		constructor,
 	}
 	ctx := GetContext()
-	conf := ctx.conf
+	conf := ctx.Conf
 	switch conf.Client.Balance {
 	case NORMAL_BALANCE:
 		sc.balancer = balance.NewNormalBalancer()
@@ -34,7 +34,7 @@ func NewServiceController(name string, initializer ClientInitializer, addrs ...s
 	for i,addr := range addrs {
 		cfg := conf.Client
 		cfg.Address = addr
-		proto := sc.clientInitializer(name, &cfg)
+		proto := sc.construct(name, &cfg)
 		protos[i] = proto
 	}
 	sc.balancer.Add(protos...)

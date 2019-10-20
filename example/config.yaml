@@ -4,11 +4,11 @@ server:
     protocol: tcp
     max_invoke: 300
     queue_cap: 200
-    accept_timeout: 60000
+    accept_timeout: 3000
     read_timeout: 3000
     write_timeout: 3000
     handle_timeout: 3000
-    idle_timeout: 60000
+    idle_timeout: 3000
     tcp_read_buf: 4194304
     tcp_write_buf: 4194304
     tcp_nodelay: false

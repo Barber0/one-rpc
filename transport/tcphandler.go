@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 	"net"
-	"github.com/Barber0/one/util/gpool"
+	"github.com/Barber0/one-rpc/util/gpool"
 	"reflect"
 	"time"
 )
@@ -24,7 +24,7 @@ func newTcpHandler(svr *OneSvr) *tcpHandler {
 	if cfg.MaxInvoke != 0 && cfg.QueueCap != 0 {
 		h.gpool = gpool.NewGPool(cfg.MaxInvoke,cfg.QueueCap)
 	}
-	h.refreshIdleTime()
+	h.idleTime = time.Now()
 	return h
 }
 
@@ -85,7 +85,7 @@ func (h *tcpHandler) recv(conn *net.TCPConn) {
 		}
 		n,err = conn.Read(buf)
 		if err != nil {
-			if len(curBuf) == 0 && h.svr.numInvoke == 0 && h.idleTime.Before(time.Now()) {
+			if len(curBuf) == 0 && h.svr.numInvoke == 0 && h.idleTime.Add(cfg.IdleTimeout).Before(time.Now()) {
 				return
 			}
 			if isNoDataErr(err) {
@@ -98,7 +98,7 @@ func (h *tcpHandler) recv(conn *net.TCPConn) {
 			}
 			return
 		}
-		h.refreshIdleTime()
+		h.idleTime = time.Now()
 		curBuf = append(curBuf, buf[:n]...)
 		for {
 			if pkgLen, status := h.svr.proto.ParsePkg(curBuf); status == PKG_LESS {
@@ -137,8 +137,4 @@ func (h *tcpHandler) handle(conn *net.TCPConn, pkg []byte) {
 	}else {
 		go handler()
 	}
-}
-
-func (h *tcpHandler) refreshIdleTime() {
-	h.idleTime = time.Now().Add(h.svr.conf.IdleTimeout)
 }

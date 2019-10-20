@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/Barber0/one"
-	"github.com/Barber0/one/example/res/test"
+	"github.com/Barber0/one-rpc"
+	"github.com/Barber0/one-rpc/example/res/test"
 )
 
 type ServiceImp struct {}

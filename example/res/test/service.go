@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"github.com/golang/protobuf/proto"
-	"github.com/Barber0/one"
-	"github.com/Barber0/one/protocol"
-	"github.com/Barber0/one/protocol/res/requestf"
+	"github.com/Barber0/one-rpc"
+	"github.com/Barber0/one-rpc/protocol"
+	"github.com/Barber0/one-rpc/protocol/res/requestf"
 )
 
 type AppService struct{
@@ -39,7 +39,7 @@ type _service interface {
 }
 
 func (s *AppService) RegisterServiceImp(name string, imp _service) error {
-	return protocol.AddProxy(name, s, imp, one.SetRpcServer)
+	return protocol.AddProxy(name, s, imp)
 }
 
 // Dispatch方法运行在服务端
