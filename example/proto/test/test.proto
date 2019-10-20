@@ -2,6 +2,14 @@ syntax = "proto3";
 
 package test;
 
-message Obj {
-    int32 code = 1;
+message Question {
+    string msg = 1;
+}
+
+message Answer {
+    string msg = 1;
+}
+
+service QnA {
+    rpc Ask(Question) returns (Answer);
 }

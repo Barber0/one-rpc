@@ -9,6 +9,12 @@ import (
 	math "math"
 )
 
+import one "github.com/Barber0/one-rpc"
+import errors "errors"
+import protocol "github.com/Barber0/one-rpc/protocol"
+import context "context"
+import requestf "github.com/Barber0/one-rpc/protocol/res/requestf"
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
@@ -20,58 +26,155 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
-type Obj struct {
-	Code                 int32    `protobuf:"varint,1,opt,name=code,proto3" json:"code,omitempty"`
+type Question struct {
+	Msg                  string   `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
 }
 
-func (m *Obj) Reset()         { *m = Obj{} }
-func (m *Obj) String() string { return proto.CompactTextString(m) }
-func (*Obj) ProtoMessage()    {}
-func (*Obj) Descriptor() ([]byte, []int) {
+func (m *Question) Reset()         { *m = Question{} }
+func (m *Question) String() string { return proto.CompactTextString(m) }
+func (*Question) ProtoMessage()    {}
+func (*Question) Descriptor() ([]byte, []int) {
 	return fileDescriptor_84eb23d74a64bdab, []int{0}
 }
 
-func (m *Obj) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_Obj.Unmarshal(m, b)
+func (m *Question) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Question.Unmarshal(m, b)
 }
-func (m *Obj) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_Obj.Marshal(b, m, deterministic)
+func (m *Question) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Question.Marshal(b, m, deterministic)
 }
-func (m *Obj) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Obj.Merge(m, src)
+func (m *Question) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Question.Merge(m, src)
 }
-func (m *Obj) XXX_Size() int {
-	return xxx_messageInfo_Obj.Size(m)
+func (m *Question) XXX_Size() int {
+	return xxx_messageInfo_Question.Size(m)
 }
-func (m *Obj) XXX_DiscardUnknown() {
-	xxx_messageInfo_Obj.DiscardUnknown(m)
+func (m *Question) XXX_DiscardUnknown() {
+	xxx_messageInfo_Question.DiscardUnknown(m)
 }
 
-var xxx_messageInfo_Obj proto.InternalMessageInfo
+var xxx_messageInfo_Question proto.InternalMessageInfo
 
-func (m *Obj) GetCode() int32 {
+func (m *Question) GetMsg() string {
 	if m != nil {
-		return m.Code
+		return m.Msg
 	}
-	return 0
+	return ""
+}
+
+type Answer struct {
+	Msg                  string   `protobuf:"bytes,1,opt,name=msg,proto3" json:"msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Answer) Reset()         { *m = Answer{} }
+func (m *Answer) String() string { return proto.CompactTextString(m) }
+func (*Answer) ProtoMessage()    {}
+func (*Answer) Descriptor() ([]byte, []int) {
+	return fileDescriptor_84eb23d74a64bdab, []int{1}
+}
+
+func (m *Answer) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Answer.Unmarshal(m, b)
+}
+func (m *Answer) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Answer.Marshal(b, m, deterministic)
+}
+func (m *Answer) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Answer.Merge(m, src)
+}
+func (m *Answer) XXX_Size() int {
+	return xxx_messageInfo_Answer.Size(m)
+}
+func (m *Answer) XXX_DiscardUnknown() {
+	xxx_messageInfo_Answer.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Answer proto.InternalMessageInfo
+
+func (m *Answer) GetMsg() string {
+	if m != nil {
+		return m.Msg
+	}
+	return ""
 }
 
 func init() {
-	proto.RegisterType((*Obj)(nil), "test.Obj")
+	proto.RegisterType((*Question)(nil), "test.Question")
+	proto.RegisterType((*Answer)(nil), "test.Answer")
 }
 
 func init() { proto.RegisterFile("test/test.proto", fileDescriptor_84eb23d74a64bdab) }
 
 var fileDescriptor_84eb23d74a64bdab = []byte{
-	// 71 bytes of a gzipped FileDescriptorProto
+	// 114 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2f, 0x49, 0x2d, 0x2e,
-	0xd1, 0x07, 0x11, 0x7a, 0x05, 0x45, 0xf9, 0x25, 0xf9, 0x42, 0x2c, 0x20, 0xb6, 0x92, 0x24, 0x17,
-	0xb3, 0x7f, 0x52, 0x96, 0x90, 0x10, 0x17, 0x4b, 0x72, 0x7e, 0x4a, 0xaa, 0x04, 0xa3, 0x02, 0xa3,
-	0x06, 0x6b, 0x10, 0x98, 0x9d, 0xc4, 0x06, 0x56, 0x67, 0x0c, 0x08, 0x00, 0x00, 0xff, 0xff, 0x1b,
-	0xb6, 0x2d, 0x26, 0x3a, 0x00, 0x00, 0x00,
+	0xd1, 0x07, 0x11, 0x7a, 0x05, 0x45, 0xf9, 0x25, 0xf9, 0x42, 0x2c, 0x20, 0xb6, 0x92, 0x0c, 0x17,
+	0x47, 0x60, 0x69, 0x6a, 0x71, 0x49, 0x66, 0x7e, 0x9e, 0x90, 0x00, 0x17, 0x73, 0x6e, 0x71, 0xba,
+	0x04, 0xa3, 0x02, 0xa3, 0x06, 0x67, 0x10, 0x88, 0xa9, 0x24, 0xc5, 0xc5, 0xe6, 0x98, 0x57, 0x5c,
+	0x9e, 0x5a, 0x84, 0x29, 0x67, 0xa4, 0xc5, 0xc5, 0x1c, 0x98, 0xe7, 0x28, 0xa4, 0xcc, 0xc5, 0xec,
+	0x58, 0x9c, 0x2d, 0xc4, 0xa7, 0x07, 0x36, 0x1a, 0x66, 0x96, 0x14, 0x0f, 0x84, 0x0f, 0xd1, 0x9d,
+	0xc4, 0x06, 0xb6, 0xd2, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x72, 0x3e, 0x7a, 0x37, 0x85, 0x00,
+	0x00, 0x00,
 }
 
-// fffffffffffffffff
+type QnA struct {
+	c *one.ServiceController
+}
+
+func NewQnA(addr ...string) *QnA {
+	as := &QnA{
+		c: one.NewServiceController("QnA", protocol.NewClientProtocol, addr...),
+	}
+	return as
+}
+
+func (s *QnA) Ask(ctx context.Context, in *Question) (out *Answer, err error) {
+	var (
+		reqPkg []byte
+		rspPkg []byte
+	)
+	reqPkg, _ = proto.Marshal(in)
+	if rspPkg, err = s.c.Send(ctx, "QnA", "Ask", reqPkg); err != nil {
+		return
+	}
+	out = &Answer{}
+	proto.Unmarshal(rspPkg, out)
+	return
+}
+
+type _qnA interface {
+	Ask(context.Context, *Question) (*Answer, error)
+}
+
+func (c *QnA) RegisterServiceImp(name string, imp _qnA) error {
+	return protocol.AddProxy(name, c, imp)
+}
+
+func (d *QnA) Dispatch(ctx context.Context, imp interface{}, req *requestf.ReqPacket, rsp *requestf.RspPacket) (err error) {
+	switch req.FuncName {
+	case "Ask":
+		payload := new(Question)
+		if err = proto.Unmarshal(req.Content, payload); err != nil {
+			return
+		}
+		var out *Answer
+		out, err = imp.(_qnA).Ask(ctx, payload)
+		if err != nil {
+			return
+		}
+		*rsp = requestf.RspPacket{
+			Version: one.ONE_RPC_VERSION,
+			ReqId:   req.ReqId,
+		}
+		rsp.Content, _ = proto.Marshal(out)
+	default:
+		err = errors.New("func mismatch, no such func")
+	}
+	return
+}

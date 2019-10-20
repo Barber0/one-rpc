@@ -1,3 +1,3 @@
 package main
 
-import _ "one/tools/protoc-gen-go/onerpc"
+import _ "github.com/Barber0/one-rpc/tools/protoc-gen-go/onerpc"
