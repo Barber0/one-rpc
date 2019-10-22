@@ -65,6 +65,9 @@ func Init() {
 	if ctx.Conf.Client.Balance == "" {
 		ctx.Conf.Client.Balance = NORMAL_BALANCE
 	}
+	if ctx.Conf.Client.TransProtocol == "" {
+		ctx.Conf.Client.TransProtocol = PROTOCOL
+	}
 	if ctx.Conf.Client.DialTimeout != 0 {
 		ctx.Conf.Client.DialTimeout *= time.Millisecond
 	}else {

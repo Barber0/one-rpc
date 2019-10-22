@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/Barber0/one-rpc"
 	"github.com/Barber0/one-rpc/example/res/test"
 )
@@ -10,9 +9,8 @@ import (
 type ServiceImp struct {}
 
 func (imp *ServiceImp) Ask(ctx context.Context, req *test.Question) (rsp *test.Answer, err error) {
-	fmt.Println(req.Msg)
 	rsp = &test.Answer{
-		Msg:	req.Msg+"----------ddd",
+		Msg:	req.Msg,
 	}
 	return
 }
