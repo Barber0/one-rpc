@@ -9,89 +9,110 @@ import (
 var _ Balancer = &ConsistentHash{}
 
 type ConsistentHash struct {
-	replicate	int
-	ring		[]uint32
-	tmpRing		[]uint32
-	nodes		map[uint32]Node
-	valMark		map[Node]struct{}
-	hashFunc	func([]byte) uint32
-	lock		*sync.Mutex
+	replicate int
+	hashFunc  func(v []byte) uint32
+	ring      []*ringNode
+	ringBuf   []*ringNode
+	valMap    map[Node]struct{}
+	lock      *sync.RWMutex
+}
+
+type ringNode struct {
+	hash uint32
+	val  Node
 }
 
 func NewConsistentHash(rep int, hashFunc func([]byte) uint32) *ConsistentHash {
 	ch := &ConsistentHash{
-		replicate:		rep,
-		hashFunc:		hashFunc,
-		tmpRing:		make([]uint32,rep),
-		nodes:			make(map[uint32]Node),
-		valMark:		make(map[Node]struct{}),
-		lock:			&sync.Mutex{},
+		replicate: rep,
+		hashFunc:  hashFunc,
+		valMap:    make(map[Node]struct{}),
+		ringBuf:   make([]*ringNode, rep),
+		lock:      &sync.RWMutex{},
 	}
 	return ch
 }
 
 func (ch *ConsistentHash) Add(nodes ...Node) (err error) {
 	ch.lock.Lock()
-	defer ch.lock.Unlock()
-
-	for _,n := range nodes {
-		if _, ok := ch.valMark[n]; ok {
+	length := len(ch.ring)
+	defer func() {
+		if len(ch.ring) != length {
+			ch.sortRing()
+		}
+		ch.lock.Unlock()
+	}()
+	for _, n := range nodes {
+		if _, ok := ch.valMap[n]; ok {
 			continue
 		}
 		for i := 0; i < ch.replicate; i++ {
-			hashKey := ch.hashFunc([]byte(fmt.Sprintf("%s#%d",n.String(),i)))
-			ch.tmpRing[i] = hashKey
-			ch.nodes[hashKey] = n
+			str := fmt.Sprintf("%s#%d", n.String(), i)
+			ch.ringBuf[i] = &ringNode{
+				hash: ch.hashFunc([]byte(str)),
+				val:  n,
+			}
 		}
-		ch.ring = append(ch.ring,ch.tmpRing...)
-		ch.valMark[n] = struct{}{}
+		ch.ring = append(ch.ring, ch.ringBuf...)
+		ch.resetRingBuf()
+		ch.valMap[n] = struct{}{}
 	}
-	ch.sortRing()
 	return
 }
 
 func (ch *ConsistentHash) Delete(nodes ...Node) (err error) {
 	ch.lock.Lock()
-	defer ch.lock.Unlock()
-	for _,n := range nodes {
-		for i := 0; i < ch.replicate; i++ {
-			hashKey := ch.hashFunc([]byte(fmt.Sprintf("%s#%d",n.String(),i)))
-			idx := sort.Search(len(ch.ring), func(j int) bool {
-				return ch.ring[j] >= hashKey
-			})
-			ch.ring = append(ch.ring[:idx],ch.ring[idx+1:]...)
-			delete(ch.nodes,hashKey)
-		}
-		delete(ch.valMark,n)
-	}
-	return
-}
-
-func (ch *ConsistentHash) GetNode(v []byte) (res Node, ok bool) {
-	ch.lock.Lock()
-	defer ch.lock.Unlock()
-	targetVal := ch.hashFunc(v)
 	length := len(ch.ring)
-	idx := sort.Search(length, func(i int) bool {
-		return ch.ring[i] >= targetVal
-	})
-	if idx < length {
-		res, ok = ch.nodes[ch.ring[idx]]
-	}else {
-		res = ch.nodes[ch.ring[0]]
-		ok = true
+	defer func() {
+		if length != len(ch.ring) {
+			ch.sortRing()
+		}
+		ch.lock.Unlock()
+	}()
+	for _, n := range nodes {
+		if _, ok := ch.valMap[n]; !ok {
+			continue
+		}
+		for i := 0; i < ch.replicate; i++ {
+			length = len(ch.ring)
+			objHash := ch.hashFunc([]byte(fmt.Sprintf("%s#%d", n.String(), i)))
+			target := sort.Search(length, func(k int) bool {
+				return ch.ring[k].hash >= objHash
+			})
+			ch.ring = append(ch.ring[:target], ch.ring[target+1:]...)
+		}
+		delete(ch.valMap, n)
 	}
 	return
 }
 
-func (ch *ConsistentHash) Show() {
-	for _,i := range ch.ring {
-		fmt.Println(i,"\t",ch.nodes[i].String())
-	}
+func (ch *ConsistentHash) GetNode(pkg []byte) (res Node, ok bool) {
+	ch.lock.RLock()
+	defer ch.lock.RUnlock()
+	length := len(ch.ring)
+	objHash := ch.hashFunc(pkg)
+	target := sort.Search(length, func(i int) bool {
+		return ch.ring[i].hash >= objHash
+	})
+	res = ch.ring[target%length].val
+	ok = true
+	return
 }
 
 func (ch *ConsistentHash) sortRing() {
 	sort.Slice(ch.ring, func(i, j int) bool {
-		return ch.ring[i] < ch.ring[j]
+		return ch.ring[i].hash < ch.ring[j].hash
 	})
+}
+
+func (ch *ConsistentHash) resetRingBuf() {
+	for i := 0; i < ch.replicate; i++ {
+		ch.ringBuf[i] = nil
+	}
+}
+
+func (ch *ConsistentHash) Show() {
+	for _, v := range ch.ring {
+		fmt.Println(v.hash, "\t", v.val.String())
+	}
 }
