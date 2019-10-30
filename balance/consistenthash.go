@@ -79,7 +79,11 @@ func (ch *ConsistentHash) Delete(nodes ...Node) (err error) {
 			target := sort.Search(length, func(k int) bool {
 				return ch.ring[k].hash >= objHash
 			})
-			ch.ring = append(ch.ring[:target], ch.ring[target+1:]...)
+			if target < length-1 {
+				ch.ring = append(ch.ring[:target], ch.ring[target+1:]...)
+			}else {
+				ch.ring = ch.ring[:target]
+			}
 		}
 		delete(ch.valMap, n)
 	}
