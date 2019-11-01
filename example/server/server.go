@@ -16,7 +16,7 @@ func (imp *ServiceImp) Ask(ctx context.Context, req *test.Question) (rsp *test.A
 }
 
 func main() {
-	app := new(test.QnA)
+	app := &test.QnA{}
 	imp := new(ServiceImp)
 	app.RegisterServiceImp("alpha",imp)
 	one.Run()

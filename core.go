@@ -2,6 +2,7 @@ package one
 
 import (
 	"flag"
+	"fmt"
 	"github.com/Barber0/one-rpc/transport"
 	"github.com/Barber0/one-rpc/util/logger"
 	"gopkg.in/yaml.v2"
@@ -39,7 +40,10 @@ func init() {
 }
 
 func Init() {
-	cfgFile,_ := ioutil.ReadFile(ConfPath)
+	cfgFile,err := ioutil.ReadFile(ConfPath)
+	if err != nil {
+		panic(fmt.Errorf("parse config err: %v, path: %v", err, ConfPath))
+	}
 	yaml.Unmarshal(cfgFile, &ctx.Conf)
 	for name, svr := range ctx.Conf.Server {
 		if svr.AcceptTimeout != 0 {
