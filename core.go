@@ -3,6 +3,7 @@ package one
 import (
 	"flag"
 	"fmt"
+	"github.com/Barber0/one-rpc/registry"
 	"github.com/Barber0/one-rpc/transport"
 	"github.com/Barber0/one-rpc/util/logger"
 	"gopkg.in/yaml.v2"
@@ -16,23 +17,25 @@ var (
 	ConfPath	string
 )
 
-type Context *ContextImp
+type Context *contextImp
 
-type ContextImp struct {
-	Logger		*logger.OneLogger
+type contextImp struct {
+	Logger		logger.Logger
 	RpcSvr		map[string]*transport.OneSvr
 	svrWg		sync.WaitGroup
 	Conf		OneGlobalConf
 }
 
 type OneGlobalConf struct {
+	LogPath		string								`yaml:"logpath"`
 	Server		map[string]*transport.OneSvrConf	`yaml:"server"`
 	Client		transport.OneCltConf				`yaml:"client"`
+	Registry	*registry.RegistryConf				`yaml:"registry"`
 }
 
 func init() {
 	flag.StringVar(&ConfPath,"config","config.yaml","config path")
-	ctx = &ContextImp{
+	ctx = &contextImp{
 		Logger:		logger.GetOneLogger("global"),
 		RpcSvr:		make(map[string]*transport.OneSvr),
 	}
@@ -44,7 +47,9 @@ func Init() {
 	if err != nil {
 		panic(fmt.Errorf("parse config err: %v, path: %v", err, ConfPath))
 	}
-	yaml.Unmarshal(cfgFile, &ctx.Conf)
+	if err = yaml.Unmarshal(cfgFile, &ctx.Conf); err != nil {
+		panic(fmt.Errorf("parse config err: %v", err))
+	}
 	for name, svr := range ctx.Conf.Server {
 		if svr.AcceptTimeout != 0 {
 			ctx.Conf.Server[name].AcceptTimeout = svr.AcceptTimeout * time.Millisecond

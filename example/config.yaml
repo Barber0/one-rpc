@@ -1,3 +1,11 @@
+name: example
+logpath: ./onerpc.log
+registry:
+  etcd:
+    endpoints: ["http://127.0.0.2:5101", "http://127.0.0.1:5103"]
+    dial_timeout: 5
+    dial_keepalive_time: 3
+    lease_ttl: 60
 server:
   alpha:
     address: 127.0.0.1:5000
