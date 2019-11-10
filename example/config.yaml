@@ -2,13 +2,13 @@ name: example
 logpath: ./onerpc.log
 registry:
   etcd:
-    endpoints: ["http://127.0.0.2:5101", "http://127.0.0.1:5103"]
+    endpoints: ["http://127.0.0.2:5101", "http://127.0.0.2:5103"]
     dial_timeout: 5
     dial_keepalive_time: 3
     lease_ttl: 60
 server:
   alpha:
-    address: 127.0.0.1:5000
+    address: 0.0.0.0:5000
     protocol: tcp
     max_invoke: 300
     queue_cap: 200
@@ -20,6 +20,7 @@ server:
     tcp_read_buf: 4194304
     tcp_write_buf: 4194304
     tcp_nodelay: false
+    service_weight: 1
 
 client:
   balance: normal

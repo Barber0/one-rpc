@@ -68,6 +68,22 @@ func (reg *EtcdRegistryCenter) UnRegister(name string) (err error) {
 	return fmt.Errorf("failed to get meta in local, service: %s", name)
 }
 
+func (reg *EtcdRegistryCenter) GetServices(name string) (metas []AppMeta, err error) {
+	var getRsp	*cliv3.GetResponse
+	if getRsp, err = reg.cli.Get(reg.ctx, name); err != nil {
+		return
+	}
+	metas = make([]AppMeta, len(getRsp.Kvs))
+	tmpMeta := new(AppMeta)
+	for i, kv := range getRsp.Kvs {
+		if err = json.Unmarshal(kv.Value, tmpMeta); err != nil {
+			return
+		}
+		metas[i] = *tmpMeta
+	}
+	return
+}
+
 func (reg *EtcdRegistryCenter) keepAlive(name string) (err error) {
 	if meta, ok := reg.leases[name]; ok {
 		if reg.leases[name].keepAliveC, err = reg.cli.KeepAlive(reg.ctx, meta.id); err != nil {
@@ -78,7 +94,6 @@ func (reg *EtcdRegistryCenter) keepAlive(name string) (err error) {
 				if ka == nil {
 					reg.ErrC <- fmt.Errorf("keepalive failed, service: %s, lease: %d",name, meta.id)
 				}
-				fmt.Println(ka)
 			}
 		}()
 		return

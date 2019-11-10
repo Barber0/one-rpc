@@ -21,4 +21,6 @@ const (
 	CLT_REQ_TIMEOUT		=	3 * time.Second
 
 	NORMAL_BALANCE		=	"normal"
+
+	REGISTER_CENTER_ETCD	=	"etcd"
 )

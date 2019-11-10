@@ -36,7 +36,11 @@ func (nb *NormalBalancer) Delete(nodes ...Node) (err error) {
 func (nb *NormalBalancer) GetNode(bs []byte) (res Node, ok bool) {
 	nb.lock.Lock()
 	defer nb.lock.Unlock()
-	nb.position = (nb.position + 1) % int32(len(nb.nodes))
+	numNodes := len(nb.nodes)
+	if numNodes < 1 {
+		return nil,false
+	}
+	nb.position = (nb.position + 1) % int32(numNodes)
 	res = nb.nodes[nb.position]
 	ok = true
 	return

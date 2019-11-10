@@ -5,6 +5,12 @@ import (
 	"net"
 )
 
+type RegisterCenter interface {
+	Register(name string, meta *AppMeta) error
+	UnRegister(name string) error
+	GetServices(name string) ([]AppMeta, error)
+}
+
 type RegistryConf struct {
 	Etcd	*EtcdConf		`yaml:"etcd"`
 }

@@ -127,11 +127,16 @@ type QnA struct {
 	c *one.ServiceController
 }
 
-func NewQnA(addr ...string) *QnA {
-	as := &QnA{
-		c: one.NewServiceController("QnA", protocol.NewClientProtocol, addr...),
+func NewQnA(name string, addr ...string) (as *QnA, err error) {
+	var sc *one.ServiceController
+	sc, err = one.NewServiceController(name, protocol.NewClientProtocol, addr...)
+	if err != nil {
+		return
 	}
-	return as
+	as = &QnA{
+		c: sc,
+	}
+	return
 }
 
 func (s *QnA) Ask(ctx context.Context, in *Question) (out *Answer, err error) {

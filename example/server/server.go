@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/Barber0/one-rpc"
 	"github.com/Barber0/one-rpc/example/res/test"
+	"log"
 )
 
 type ServiceImp struct {}
@@ -18,6 +19,8 @@ func (imp *ServiceImp) Ask(ctx context.Context, req *test.Question) (rsp *test.A
 func main() {
 	app := &test.QnA{}
 	imp := new(ServiceImp)
-	app.RegisterServiceImp("alpha",imp)
+	if err := app.RegisterServiceImp("alpha", imp); err != nil {
+		log.Fatalf("register service failed, err: %v", err)
+	}
 	one.Run()
 }

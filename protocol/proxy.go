@@ -14,6 +14,7 @@ func AddProxy(name string, dpr dispatcher, imp interface{}) error {
 		return errors.New("fetch server config failed")
 	}else {
 		ctx.RpcSvr[name] = transport.NewOneSvr(p,logger.GetOneLogger(name),conf)
+		return one.RegisterService(name, conf)
 	}
 	return nil
 }

@@ -23,6 +23,8 @@ type OneSvrConf struct {
 	TCPReadBuf		int
 	TCPWriteBuf		int
 	TCPNoDelay		bool
+
+	ServiceWeight	int				`yaml:"service_weight"`
 }
 
 type OneHandler interface {

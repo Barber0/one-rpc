@@ -4,11 +4,15 @@ import (
 	"context"
 	"fmt"
 	"github.com/Barber0/one-rpc/example/res/test"
+	"log"
 	"time"
 )
 
 func main() {
-	app := test.NewQnA("127.0.0.1:5000")
+	app, err := test.NewQnA("alpha")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	tenTimes(app)
 	time.Sleep(5*time.Second)

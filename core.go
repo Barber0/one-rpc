@@ -1,6 +1,7 @@
 package one
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/Barber0/one-rpc/registry"
@@ -8,6 +9,8 @@ import (
 	"github.com/Barber0/one-rpc/util/logger"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"net"
+	"strings"
 	"sync"
 	"time"
 )
@@ -17,13 +20,16 @@ var (
 	ConfPath	string
 )
 
-type Context *contextImp
+type (
+	Context 			*contextImp
+)
 
 type contextImp struct {
 	Logger		logger.Logger
 	RpcSvr		map[string]*transport.OneSvr
 	svrWg		sync.WaitGroup
 	Conf		OneGlobalConf
+	RegisterCenters	map[string]registry.RegisterCenter
 }
 
 type OneGlobalConf struct {
@@ -38,17 +44,25 @@ func init() {
 	ctx = &contextImp{
 		Logger:		logger.GetOneLogger("global"),
 		RpcSvr:		make(map[string]*transport.OneSvr),
+		RegisterCenters:	make(map[string]registry.RegisterCenter),
 	}
 	Init()
 }
 
 func Init() {
+	var err error
 	cfgFile,err := ioutil.ReadFile(ConfPath)
 	if err != nil {
 		panic(fmt.Errorf("parse config err: %v, path: %v", err, ConfPath))
 	}
 	if err = yaml.Unmarshal(cfgFile, &ctx.Conf); err != nil {
 		panic(fmt.Errorf("parse config err: %v", err))
+	}
+	if etcdConf := ctx.Conf.Registry.Etcd; etcdConf != nil {
+		ctx.RegisterCenters[REGISTER_CENTER_ETCD], err = registry.NewEtcdRegistryCenter(context.Background(), etcdConf)
+		if err != nil {
+			panic(fmt.Errorf("init etcd registry center failed, err: %v", err))
+		}
 	}
 	for name, svr := range ctx.Conf.Server {
 		if svr.AcceptTimeout != 0 {
@@ -114,4 +128,28 @@ func Run() {
 		}()
 	}
 	ctx.svrWg.Wait()
+}
+
+func RegisterService(name string, serverConf *transport.OneSvrConf, metaInfo...string) error {
+	ip, err := registry.GetLocalIP()
+	if err != nil {
+		return err
+	}
+	addr, err := net.ResolveTCPAddr("tcp", serverConf.Address)
+	if err != nil {
+		return err
+	}
+	meta := &registry.AppMeta{
+		IP:		ip,
+		Port:	addr.Port,
+		Weight:	serverConf.ServiceWeight,
+		MetaData:	strings.Join(metaInfo,"\r\n"),
+	}
+	for regName, center := range ctx.RegisterCenters {
+		if err := center.Register(name, meta); err != nil {
+			return err
+		}
+		ctx.Logger.Debugf("Register %s in %s, meta: %v", name, regName, meta)
+	}
+	return nil
 }
